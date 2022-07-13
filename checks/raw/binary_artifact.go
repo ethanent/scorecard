@@ -39,6 +39,7 @@ func BinaryArtifacts(c clients.RepoClient) (checker.BinaryArtifactData, error) {
 	if err != nil {
 		return checker.BinaryArtifactData{}, fmt.Errorf("%w", err)
 	}
+
 	// No error, return the files.
 	return checker.BinaryArtifactData{Files: files}, nil
 }
