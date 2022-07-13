@@ -139,34 +139,33 @@ func gradleWrapperValidated(c clients.RepoClient) (bool, string, error) {
 	if err != nil {
 		return false, "", fmt.Errorf("%w", err)
 	}
-	if metadata.Path != "" {
-		if !gradleWrapperValidationActionVersionConstraint.Check(metadata.ActionVersion) {
-			// Version out of acceptable range.
-			fmsg := fmt.Sprintf("The wrapper-validation-action version %s does not match requirement %s.",
-				metadata.ActionVersion.String(),
-				gradleWrapperValidationActionVersionConstraint.String())
-			return false, fmsg, nil
-		}
-		// If validated, check that latest commit has a relevant successful run
-		runs, err := c.ListSuccessfulWorkflowRuns(metadata.Path)
-		if err != nil {
-			return false, "", fmt.Errorf("failure listing workflow runs: %w", err)
-		}
-		commits, err := c.ListCommits()
-		if err != nil {
-			return false, "", fmt.Errorf("failure listing commits: %w", err)
-		}
-		if len(commits) < 1 || len(runs) < 1 {
-			return false, "The repository has no workflow runs.", nil
-		}
-		for _, r := range runs {
-			if *r.HeadSHA == commits[0].SHA {
-				// Commit has corresponding successful run!
-				return true, "Successfully validated verification.", nil
-			}
-		}
-	} else {
+	if metadata.Path == "" {
 		return false, "Could not find a workflow using the gradle/wrapper-validation-action Action.", nil
+	}
+	if !gradleWrapperValidationActionVersionConstraint.Check(metadata.ActionVersion) {
+		// Version out of acceptable range.
+		fmsg := fmt.Sprintf("The wrapper-validation-action version %s does not match requirement %s.",
+			metadata.ActionVersion.String(),
+			gradleWrapperValidationActionVersionConstraint.String())
+		return false, fmsg, nil
+	}
+	// If validated, check that latest commit has a relevant successful run
+	runs, err := c.ListSuccessfulWorkflowRuns(metadata.Path)
+	if err != nil {
+		return false, "", fmt.Errorf("failure listing workflow runs: %w", err)
+	}
+	commits, err := c.ListCommits()
+	if err != nil {
+		return false, "", fmt.Errorf("failure listing commits: %w", err)
+	}
+	if len(commits) < 1 || len(runs) < 1 {
+		return false, "The repository has no workflow runs.", nil
+	}
+	for _, r := range runs {
+		if *r.HeadSHA == commits[0].SHA {
+			// Commit has corresponding successful run!
+			return true, "Successfully validated verification.", nil
+		}
 	}
 	return false, "Latest commit is not verified by passing workflow using the Gradle wrapper validation Action.", nil
 }
