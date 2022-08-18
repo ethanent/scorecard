@@ -222,7 +222,7 @@ func checkWorkflowValidatesGradleWrapper(path string, content []byte, args ...in
 	}
 
 	action, errs := actionlint.Parse(content)
-	if len(errs) > 0 {
+	if len(errs) > 0 || action == nil {
 		// Parse fail, so not this file.
 		return true, nil
 	}
